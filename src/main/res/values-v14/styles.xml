@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- General -->
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:colorBackground">@color/white</item>
+        <item name="android:windowContentOverlay">@drawable/my_title_bar_shadow</item>
+
+        <!-- ListView -->
+        <item name="android:listViewStyle">@style/MyListView</item>
+
+        <!-- ActionBar -->
+        <item name="android:actionBarStyle">@style/MyActionBar</item>
+        <item name="android:actionMenuTextColor">@color/gray</item>
+
+        <item name="android:actionBarTabStyle">@style/MyActionBar.TabStyle</item>
+        <item name="android:actionBarTabTextStyle">@style/MyActionBar.TabText</item>
+    </style>
+
+    <!-- Custom ActionBar -->
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@color/white</item>
+        <item name="android:backgroundStacked">@color/white</item>
+
+        <item name="android:titleTextStyle">@style/MyActionBar.TitleStyle</item>
+        <item name="android:subtitleTextStyle">@style/MyActionBar.SubtitleStyle</item>
+    </style>
+
+    <style name="MyActionBar.TitleStyle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/primary</item>
+    </style>
+
+    <style name="MyActionBar.SubtitleStyle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle">
+        <item name="android:textColor">@color/gray</item>
+    </style>
+
+    <style name="MyActionBar.TabStyle" parent="@style/Widget.AppCompat.ActionBar.TabView">
+        <item name="android:background">@drawable/tab_indicator_myactionbar</item>
+    </style>
+
+    <style name="MyActionBar.TabText" parent="@style/Widget.AppCompat.ActionBar.TabText">
+        <item name="android:textColor">@color/gray</item>
+    </style>
+    
+    <style name="MyActionBar.TabBar" parent="@style/Widget.AppCompat.ActionBar.TabBar">
+        <item name="android:background">@color/white</item>
+    </style>
+
+    <!-- Custom List Item -->
+    <style name="MyListItem">
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+    </style>
+
+    <style name="MyListItem.Title" parent="MyTextAppearance.Widget.ListView.ItemView.Title">
+        <item name="android:textColor">@color/primary</item>
+    </style>
+
+    <style name="MyListItem.Subtitle"
+           parent="MyTextAppearance.Widget.ListView.ItemView.Subtitle">
+    </style>
+
+    <!-- Custom Text Appearance -->
+    <style name="MyTextAppearance" />
+
+    <!--    Widgets -->
+    <style name="MyTextAppearance.Widget">
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <!--        ListView -->
+    <style name="MyTextAppearance.Widget.ListView" />
+
+    <style name="MyTextAppearance.Widget.ListView.ItemView">
+        <item name="android:textColor">@color/gray</item>
+    </style>
+
+    <style name="MyTextAppearance.Widget.ListView.ItemView.Title">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="MyTextAppearance.Widget.ListView.ItemView.Subtitle">
+        <item name="android:textSize">12sp</item>
+    </style>
+
+</resources>

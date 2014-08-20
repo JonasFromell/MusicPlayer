@@ -1,0 +1,19 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- ListView -->
+        <item name="android:listViewStyle">@style/MyListView</item>
+
+    </style>
+
+    <!-- Custom ListView -->
+    <style name="MyListView" parent="@android:style/Widget.ListView">
+        <item name="android:cacheColorHint">@color/white</item>
+        <item name="android:background">@color/white</item>
+        <item name="android:listSelector">@drawable/list_view</item>
+        <item name="android:divider">@drawable/list_divider</item>
+        <item name="android:dividerHeight">1dp</item>
+    </style>
+
+</resources>
