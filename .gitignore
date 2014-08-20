@@ -2,3 +2,4 @@
 build.gradle
 musicplayer.iml
 proguard-rules.txt
+.DS_Store

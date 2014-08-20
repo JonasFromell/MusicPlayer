@@ -36,6 +36,10 @@ public class PlaybackService extends Service {
     // Track the current song
     private Song mCurrentSong;
 
+    // Keep track of state of music player
+    private boolean mIsPaused = false;
+    private boolean mIsStopped = false;
+
     // Keep track of the registered clients
     private ArrayList<Messenger> mClients = new ArrayList<Messenger>();
 
@@ -82,8 +86,8 @@ public class PlaybackService extends Service {
                 case MSG_ADD_TO_QUEUE:
                     Log.i(TAG, "Handling ADD_TO_QUEUE");
                     // Get the song out of the message
-                    Song song = (Song) msg.getData().getParcelable("Song");
-
+                    Song song = msg.getData().getParcelable("Song");
+                    Log.i(TAG, "Adding song: " + song.getTitle());
                     // Add the song to the queue
                     addToQueue(song);
 
@@ -145,19 +149,30 @@ public class PlaybackService extends Service {
     }
 
     /**
-     * Resumes playback
+     * Resumes playback if paused, or plays the first song in the queue if there is one
      */
     private void play () {
-        // We don't wanna call start() if currently playing
+        // We don't wanna do anything if we are currently playing
         if (!mMediaPlayer.isPlaying()) {
-            mMediaPlayer.start();
+            // If playback is currently paused, just resume playback
+            if (mIsPaused) {
+                mIsPaused = false;
+
+                mMediaPlayer.start();
+            }
+            // Playback has not yet begun, so if we have queued songs, play the first one
+            else {
+                if (mQueue.length() > 0) {
+                    play(mQueue.getFirst());
+                }
+            }
         }
     }
 
     /**
      * Starts playback
      *
-     * @param song
+     * @param song Song
      */
     private void play (Song song) {
         // Reset the media player
@@ -185,6 +200,8 @@ public class PlaybackService extends Service {
      * Pauses playback
      */
     private void pause () {
+        mIsPaused = true;
+
         mMediaPlayer.pause();
     }
 
@@ -289,6 +306,8 @@ public class PlaybackService extends Service {
         @Override
         public void onPrepared (MediaPlayer mediaPlayer) {
             Log.i(TAG, "MediaPlayer is prepared");
+            // Make sure paused is set to false
+            mIsPaused = false;
 
             mediaPlayer.start();
         }

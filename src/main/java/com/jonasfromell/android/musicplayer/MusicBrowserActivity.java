@@ -105,7 +105,7 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
 
         // Build the data
         Bundle data = new Bundle();
-        data.putParcelable("Song", (Parcelable) song);
+        data.putParcelable("Song", song);
 
         // Attach the data to the message
         msg.setData(data);

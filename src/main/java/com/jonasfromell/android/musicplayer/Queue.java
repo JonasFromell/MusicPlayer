@@ -29,8 +29,12 @@ public class Queue {
         mSongs.clear();
     }
 
-    public ArrayList<Song> getSongs () {
+    public ArrayList<Song> getAll () {
         return mSongs;
+    }
+
+    public Song getFirst () {
+        return mSongs.get(0);
     }
 
     public Song getNext (int curPosition) {
@@ -51,6 +55,10 @@ public class Queue {
 
     public int indexOf (Song song) {
         return mSongs.indexOf(song);
+    }
+
+    public int length () {
+        return mSongs.size();
     }
 
 }
