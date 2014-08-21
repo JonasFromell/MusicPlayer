@@ -247,15 +247,22 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
         @Override
         public void handleMessage (Message msg) {
             switch (msg.what) {
-                case PlaybackService.MSG_NOW_PLAYING:
-                    Song song = msg.getData().getParcelable("Song");
-                    Log.i(TAG, "Now playing song: " + song.getTitle());
+                case PlaybackService.MSG_IS_PLAYING:
+                    // If data is attached to this message, a new song is being played
+                    if (msg.getData() != null) {
+                        Song song = msg.getData().getParcelable("Song");
 
-                    doUpdatePlayer(song);
+                        doUpdatePlayer(song);
+                    }
                     break;
                 case PlaybackService.MSG_IS_PAUSED:
                     Log.i(TAG, "Playback is paused");
                     doUpdatePlayerButton(true);
+                    break;
+                case PlaybackService.MSG_IS_RESUMED:
+                    Log.i(TAG, "Playback is resumed");
+                    doUpdatePlayerButton(false);
+                    break;
                 default:
                     super.handleMessage(msg);
             }

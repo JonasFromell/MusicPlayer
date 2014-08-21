@@ -55,10 +55,11 @@ public class PlaybackService extends Service {
 
     static final int MSG_PLAY = 6;
 
-    static final int MSG_NOW_PLAYING = 7;
+    static final int MSG_IS_PLAYING = 7;
     static final int MSG_IS_PAUSED = 8;
+    static final int MSG_IS_RESUMED = 9;
 
-    static final int MSG_ADD_TO_QUEUE = 9;
+    static final int MSG_ADD_TO_QUEUE = 10;
 
     // This is what we publish to the client
     final Messenger mMessenger = new Messenger(new IncomingHandler());
@@ -91,41 +92,29 @@ public class PlaybackService extends Service {
                     previous();
                     break;
                 case MSG_PLAY:
-                    // TODO: Refactor this into it's own function
-                    Log.i(TAG, "Handling PLAY");
                     // Get the song out of the message
-                    Song playSong = msg.getData().getParcelable("Song");
-                    Log.i(TAG, "Playing song: " + playSong.getTitle());
-                    // Play the song
-                    play(playSong);
+                    if (msg.getData() != null) {
+                        Song playSong = msg.getData().getParcelable("Song");
 
-                    // Build a new message to send to the clients
-                    Message newMessage = Message.obtain(null, MSG_NOW_PLAYING);
+                        // Play the song
+                        play(playSong);
 
-                    Bundle data = new Bundle();
-                    data.putParcelable("Song", mCurrentSong);
+                        // Broadcast to clients
+                        Bundle data = new Bundle();
+                        data.putParcelable("Song", mCurrentSong);
 
-                    newMessage.setData(data);
-                    // TODO: Refactor this into it's own function (as we will be using this a lot)
-                    // Send messages back to the clients that this song is now playing
-                    for (int i = mClients.size() - 1; i >= 0; i--) {
-                        try {
-                            mClients.get(i).send(newMessage);
-                        }
-                        catch (RemoteException e) {
-                            // The client is dead, remove it from the list
-                            mClients.remove(i);
-                        }
+                        sendMessageToClients(MSG_IS_PLAYING, data);
                     }
 
                     break;
                 case MSG_ADD_TO_QUEUE:
-                    Log.i(TAG, "Handling ADD_TO_QUEUE");
-                    // Get the song out of the message
-                    Song queueSong = msg.getData().getParcelable("Song");
-                    Log.i(TAG, "Adding song: " + queueSong.getTitle());
-                    // Add the song to the queue
-                    addToQueue(queueSong);
+                    if (msg.getData() != null) {
+                        // Get the song out of the message
+                        Song queueSong = msg.getData().getParcelable("Song");
+
+                        // Add the song to the queue
+                        addToQueue(queueSong);
+                    }
 
                     break;
                 // Default
@@ -195,6 +184,9 @@ public class PlaybackService extends Service {
                 mIsPaused = false;
 
                 mMediaPlayer.start();
+
+                // Broadcast to clients
+                sendMessageToClients(MSG_IS_RESUMED);
             }
             // Playback has not yet begun, so if we have queued songs, play the first one
             else {
@@ -208,7 +200,7 @@ public class PlaybackService extends Service {
     /**
      * Starts playback
      *
-     * @param song Song
+     * @param song The song to play
      */
     private void play (Song song) {
         // Reset the media player
@@ -240,7 +232,8 @@ public class PlaybackService extends Service {
 
         mMediaPlayer.pause();
 
-        // TODO: Broadcast to clients
+        // Broadcast to clients
+        sendMessageToClients(MSG_IS_PAUSED);
     }
 
     /**
@@ -316,6 +309,39 @@ public class PlaybackService extends Service {
         mQueue.remove(song);
     }
 
+
+    /**
+     * Utils
+     */
+    private void sendMessageToClients (int code) {
+        Message msg = Message.obtain(null, code);
+
+        for (int i = mClients.size() - 1; i >= 0; i--) {
+            try {
+                mClients.get(i).send(msg);
+            }
+            catch (RemoteException e) {
+                // The client is dead, remove it from the list
+                mClients.remove(i);
+            }
+        }
+    }
+
+    private void sendMessageToClients (int code, Bundle data) {
+        Message msg = Message.obtain(null, code);
+        msg.setData(data);
+
+        for (int i = mClients.size() - 1; i >= 0; i--) {
+            try {
+                mClients.get(i).send(msg);
+            }
+            catch (RemoteException e) {
+                // The client is dead, remove it from the list
+                mClients.remove(i);
+            }
+        }
+    }
+
     /**
      * MediaPlayer.OnComplete listener
      */
@@ -335,15 +361,17 @@ public class PlaybackService extends Service {
     private MediaPlayer.OnErrorListener mOnErrorListener = new MediaPlayer.OnErrorListener() {
         @Override
         public boolean onError (MediaPlayer mediaPlayer, int i, int i2) {
-            Log.i(TAG, "MediaPlayer threw an error");
+            Log.e(TAG, "MediaPlayer threw an error");
             return false;
         }
     };
 
+    /**
+     * MediaPlayer.OnPrepared listener
+     */
     private MediaPlayer.OnPreparedListener mOnPreparedListener = (new MediaPlayer.OnPreparedListener() {
         @Override
         public void onPrepared (MediaPlayer mediaPlayer) {
-            Log.i(TAG, "MediaPlayer is prepared");
             // Make sure paused is set to false
             mIsPaused = false;
 

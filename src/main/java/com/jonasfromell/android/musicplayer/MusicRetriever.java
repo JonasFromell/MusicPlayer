@@ -151,10 +151,12 @@ public class MusicRetriever {
         // Create an empty array of songs
         ArrayList<Song> songs = new ArrayList<Song>();
 
+        String selection = MediaStore.Audio.Media.IS_MUSIC + "!=0";
+
         // Initialize a cursor object for the songs
         ContentResolver resolver = c.getContentResolver();
         Uri URI = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor cursor = resolver.query(URI, cols, null, null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
+        Cursor cursor = resolver.query(URI, cols, selection, null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
 
         // Check if there are any records
         if (cursor != null && cursor.moveToFirst()) {
@@ -168,10 +170,10 @@ public class MusicRetriever {
                         cursor.getString(4)
                 ));
             } while (cursor.moveToNext());
-        }
 
-        // Close the cursor
-        cursor.close();
+            // Close the cursor
+            cursor.close();
+        }
 
         // Return the songs
         return songs;
@@ -208,10 +210,10 @@ public class MusicRetriever {
                         cursor.getString(3)
                 ));
             } while (cursor.moveToNext());
-        }
 
-        // Close the cursor
-        cursor.close();
+            // Close the cursor
+            cursor.close();
+        }
 
         // Return the artists
         return artists;
