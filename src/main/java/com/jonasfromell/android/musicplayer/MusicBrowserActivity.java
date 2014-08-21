@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.os.Parcelable;
 import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -248,7 +247,6 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
         public void handleMessage (Message msg) {
             switch (msg.what) {
                 case PlaybackService.MSG_IS_PLAYING:
-                    // If data is attached to this message, a new song is being played
                     if (msg.getData() != null) {
                         Song song = msg.getData().getParcelable("Song");
 
@@ -265,6 +263,7 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
                     break;
                 default:
                     super.handleMessage(msg);
+                    break;
             }
         }
     }

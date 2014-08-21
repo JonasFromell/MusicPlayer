@@ -2,6 +2,7 @@ package com.jonasfromell.android.musicplayer;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -15,6 +16,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.KeyEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +30,8 @@ public class PlaybackService extends Service {
     // AudioManager to request audio focus for playback
     private AudioManager mAudioManager;
 
+    private NoisyAudioStreamReceiver mNoisyAudioStreamReceiver;
+
     // The MediaPlayer
     private MediaPlayer mMediaPlayer;
 
@@ -40,7 +44,6 @@ public class PlaybackService extends Service {
 
     // Keep track of state of music player
     private boolean mIsPaused = false;
-    private boolean mIsStopped = false;
 
     // Keep track of the registered clients
     private ArrayList<Messenger> mClients = new ArrayList<Messenger>();
@@ -138,6 +141,9 @@ public class PlaybackService extends Service {
         // Initialize the audio manager
         mAudioManager = (AudioManager) getBaseContext().getSystemService(Context.AUDIO_SERVICE);
 
+        // Initialize receivers
+        mNoisyAudioStreamReceiver = new NoisyAudioStreamReceiver();
+
         // Initialize the media player
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -183,7 +189,7 @@ public class PlaybackService extends Service {
             if (mIsPaused) {
                 mIsPaused = false;
 
-                mMediaPlayer.start();
+                doStartPlayback();
 
                 // Broadcast to clients
                 sendMessageToClients(MSG_IS_RESUMED);
@@ -220,7 +226,7 @@ public class PlaybackService extends Service {
         // Store the current position in the queue
         mCurrentQueuePosition = mQueue.indexOf(song);
 
-        // Prepare the media player
+        // Prepare the media player (the actual starting will take place in the OnPrepared callback)
         mMediaPlayer.prepareAsync();
     }
 
@@ -241,6 +247,8 @@ public class PlaybackService extends Service {
      */
     private void stop () {
         mMediaPlayer.stop();
+
+        doUnregisterReceivers();
     }
 
     /**
@@ -313,6 +321,50 @@ public class PlaybackService extends Service {
     /**
      * Utils
      */
+
+    /**
+     * Requests audiofocus
+     * @return boolean Result of the AudioFocusRequest
+     */
+    private void doStartPlayback () {
+        // Make sure we have audio focus
+        if (doRequestAudioFocus()) {
+            // Register any receivers we need during playback
+            doRegisterReceivers();
+
+            // Start playback
+            mMediaPlayer.start();
+        }
+    }
+
+    private boolean doRequestAudioFocus () {
+        int result = mAudioManager.requestAudioFocus(
+                mAudioFocusChangeListener,
+                AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN
+        );
+
+        return (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+    }
+
+    private void doRegisterReceivers () {
+        // Register NoisyAudioStreamReceiver
+        registerReceiver(mNoisyAudioStreamReceiver, mNoisyAudioIntentFilter);
+
+        // Register RemoteControlReceiver
+        ComponentName cn = new ComponentName(getBaseContext(), RemoteControlReceiver.class);
+        mAudioManager.registerMediaButtonEventReceiver(cn);
+    }
+
+    private void doUnregisterReceivers () {
+        // Unregister NoisyAudioStreamReceiver
+        unregisterReceiver(mNoisyAudioStreamReceiver);
+
+        // Unregister RemoteControlReceiver
+        ComponentName cn = new ComponentName(getBaseContext(), RemoteControlReceiver.class);
+        mAudioManager.unregisterMediaButtonEventReceiver(cn);
+    }
+
     private void sendMessageToClients (int code) {
         Message msg = Message.obtain(null, code);
 
@@ -372,10 +424,11 @@ public class PlaybackService extends Service {
     private MediaPlayer.OnPreparedListener mOnPreparedListener = (new MediaPlayer.OnPreparedListener() {
         @Override
         public void onPrepared (MediaPlayer mediaPlayer) {
-            // Make sure paused is set to false
+            // Update player state
             mIsPaused = false;
 
-            mediaPlayer.start();
+            // Start playback
+            doStartPlayback();
         }
     });
 
@@ -392,8 +445,10 @@ public class PlaybackService extends Service {
                 play();
             }
             else if (i == AudioManager.AUDIOFOCUS_LOSS) {
+                // Abandon the audio focus
                 mAudioManager.abandonAudioFocus(mAudioFocusChangeListener);
 
+                // Stop playback (this will also unregister any receivers)
                 stop();
             }
         }
@@ -411,7 +466,33 @@ public class PlaybackService extends Service {
         @Override
         public void onReceive (Context context, Intent intent) {
             if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
+                Log.i(TAG, "Audio is noisy, pausing");
                 pause();
+            }
+        }
+    }
+
+    public class RemoteControlReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive (Context context, Intent intent) {
+            if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
+                KeyEvent event = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+
+                if (KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE == event.getKeyCode()) {
+                    toggle();
+                }
+                else if (KeyEvent.KEYCODE_MEDIA_PLAY == event.getKeyCode()) {
+                    play();
+                }
+                else if (KeyEvent.KEYCODE_MEDIA_PAUSE == event.getKeyCode()) {
+                    pause();
+                }
+                else if (KeyEvent.KEYCODE_MEDIA_NEXT == event.getKeyCode()) {
+                    next();
+                }
+                else if (KeyEvent.KEYCODE_MEDIA_PREVIOUS == event.getKeyCode()) {
+                    previous();
+                }
             }
         }
     }
