@@ -1,8 +1,6 @@
 package com.jonasfromell.android.musicplayer;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
@@ -27,10 +25,22 @@ public class SongsFragment extends ListFragment {
 
     private static final int CONTEXTMENU_ADD_TO_QUEUE = 1;
 
-    private OnContextMenuItemClicked mCallback;
+    /**
+     * Context menu callback interface
+     */
+    private OnContextMenuItemClicked mContextMenuItemClicked;
 
     public interface OnContextMenuItemClicked {
         public void onQueueSongItemClicked (Song song);
+    }
+
+    /**
+     * ListView callback interface
+     */
+    private OnListItemClicked mListItemClicked;
+
+    public interface OnListItemClicked {
+        public void onListItemClicked (Song song);
     }
 
     @Override
@@ -40,10 +50,19 @@ public class SongsFragment extends ListFragment {
         // Make sure the container activity has implemented
         // the callback interface.
         try {
-            mCallback = (OnContextMenuItemClicked) activity;
+            mContextMenuItemClicked = (OnContextMenuItemClicked) activity;
         }
         catch (ClassCastException e) {
             throw new ClassCastException(activity.toString() + " must implement OnContextMenuItemClicked listener");
+        }
+
+        // Make sure the container activity has implemented
+        // the callback interface.
+        try {
+            mListItemClicked = (OnListItemClicked) activity;
+        }
+        catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement OnListItemClicked listener");
         }
     }
 
@@ -67,6 +86,11 @@ public class SongsFragment extends ListFragment {
     @Override
     public void onListItemClick (ListView l, View v, int position, long id) {
         Log.i(TAG, "Begin playing song");
+        // Get the song
+        Song song = ((SongsAdapter) getListAdapter()).getItem(position);
+
+        // Send to activity
+        mListItemClicked.onListItemClicked(song);
     }
 
     @Override
@@ -86,7 +110,7 @@ public class SongsFragment extends ListFragment {
 
         switch (item.getItemId()) {
             case CONTEXTMENU_ADD_TO_QUEUE:
-                mCallback.onQueueSongItemClicked(song);
+                mContextMenuItemClicked.onQueueSongItemClicked(song);
                 break;
             default:
                 break;

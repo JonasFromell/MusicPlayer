@@ -7,11 +7,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 
 import java.io.IOException;
@@ -51,7 +53,12 @@ public class PlaybackService extends Service {
     static final int MSG_PLAY_NEXT = 4;
     static final int MSG_PLAY_PREVIOUS = 5;
 
-    static final int MSG_ADD_TO_QUEUE = 6;
+    static final int MSG_PLAY = 6;
+
+    static final int MSG_NOW_PLAYING = 7;
+    static final int MSG_IS_PAUSED = 8;
+
+    static final int MSG_ADD_TO_QUEUE = 9;
 
     // This is what we publish to the client
     final Messenger mMessenger = new Messenger(new IncomingHandler());
@@ -83,13 +90,42 @@ public class PlaybackService extends Service {
                     Log.i(TAG, "Handling PLAY_PREVIOUS");
                     previous();
                     break;
+                case MSG_PLAY:
+                    // TODO: Refactor this into it's own function
+                    Log.i(TAG, "Handling PLAY");
+                    // Get the song out of the message
+                    Song playSong = msg.getData().getParcelable("Song");
+                    Log.i(TAG, "Playing song: " + playSong.getTitle());
+                    // Play the song
+                    play(playSong);
+
+                    // Build a new message to send to the clients
+                    Message newMessage = Message.obtain(null, MSG_NOW_PLAYING);
+
+                    Bundle data = new Bundle();
+                    data.putParcelable("Song", mCurrentSong);
+
+                    newMessage.setData(data);
+                    // TODO: Refactor this into it's own function (as we will be using this a lot)
+                    // Send messages back to the clients that this song is now playing
+                    for (int i = mClients.size() - 1; i >= 0; i--) {
+                        try {
+                            mClients.get(i).send(newMessage);
+                        }
+                        catch (RemoteException e) {
+                            // The client is dead, remove it from the list
+                            mClients.remove(i);
+                        }
+                    }
+
+                    break;
                 case MSG_ADD_TO_QUEUE:
                     Log.i(TAG, "Handling ADD_TO_QUEUE");
                     // Get the song out of the message
-                    Song song = msg.getData().getParcelable("Song");
-                    Log.i(TAG, "Adding song: " + song.getTitle());
+                    Song queueSong = msg.getData().getParcelable("Song");
+                    Log.i(TAG, "Adding song: " + queueSong.getTitle());
                     // Add the song to the queue
-                    addToQueue(song);
+                    addToQueue(queueSong);
 
                     break;
                 // Default
@@ -203,6 +239,8 @@ public class PlaybackService extends Service {
         mIsPaused = true;
 
         mMediaPlayer.pause();
+
+        // TODO: Broadcast to clients
     }
 
     /**

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- General Theme -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- General -->
         <item name="android:windowBackground">@color/white</item>
@@ -15,6 +16,16 @@
 
         <item name="android:actionBarTabStyle">@style/MyActionBar.TabStyle</item>
         <item name="android:actionBarTabTextStyle">@style/MyActionBar.TabText</item>
+    </style>
+
+    <!-- Transparent Theme -->
+    <style name="AppTheme.Transparent" parent="AppTheme">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
     </style>
 
     <!-- Custom ActionBar -->

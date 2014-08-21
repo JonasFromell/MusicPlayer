@@ -38,7 +38,7 @@ public class Queue {
     }
 
     public Song getNext (int curPosition) {
-        if (mSongs.get(++curPosition) != null) {
+        if (!(++curPosition > mSongs.size())) {
             return mSongs.get(++curPosition);
         }
 
@@ -46,7 +46,7 @@ public class Queue {
     }
 
     public Song getPrevious (int curPosition) {
-        if (mSongs.get(--curPosition) != null) {
+        if (!(--curPosition < 0)) {
             return mSongs.get(--curPosition);
         }
 

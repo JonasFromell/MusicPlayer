@@ -11,15 +11,18 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.Parcelable;
 import android.os.RemoteException;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
 
-public class MusicBrowserActivity extends ActionBarActivity implements SongsFragment.OnContextMenuItemClicked {
+public class MusicBrowserActivity extends ActionBarActivity implements SongsFragment.OnContextMenuItemClicked, SongsFragment.OnListItemClicked, PlayerFragment.OnPlayerControlClickedListener {
     private static final String TAG = "MusicBrowserActivity";
 
     private ActionBar mActionBar;
@@ -27,6 +30,8 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
 
     private Messenger mPlaybackService;
     private boolean mIsBound;
+
+    private boolean mIsPlayerHidden;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -61,6 +66,21 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
 
         // Set the adapter for the view pager
         mViewPager.setAdapter(fragmentPagerAdapter);
+
+        // Instantiate the player fragment
+        Fragment fragment = fm.findFragmentById(R.id.music_browser_player_fragment);
+
+        if (fragment == null) {
+            fragment = new PlayerFragment();
+
+            fm.beginTransaction()
+                    .add(R.id.music_browser_player_fragment, fragment)
+                    .hide(fragment)
+                    .commit();
+        }
+
+        // Player fragment is hidden by default
+        mIsPlayerHidden = true;
 
         // Define the listener for the tab selection
         ActionBar.TabListener tabListener = new ActionBar.TabListener() {
@@ -109,6 +129,49 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
 
         // Attach the data to the message
         msg.setData(data);
+
+        // Send message
+        try {
+            mPlaybackService.send(msg);
+        }
+        catch (RemoteException e) {
+            // Service has crashed
+        }
+    }
+
+    /**
+     * SongsFragment.OnListItemClicked implementation
+     */
+    @Override
+    public void onListItemClicked (Song song) {
+        // Build play message
+        Message msg = Message.obtain(null, PlaybackService.MSG_PLAY);
+        msg.replyTo = mMessenger;
+
+        // Build the data
+        Bundle data = new Bundle();
+        data.putParcelable("Song", song);
+
+        // Attach the data to the message
+        msg.setData(data);
+
+        // Send message
+        try {
+            mPlaybackService.send(msg);
+        }
+        catch (RemoteException e) {
+            // Service has crashed
+        }
+    }
+
+    /**
+     * PlayerFragment.OnPlayerControlClickedListener
+     */
+    @Override
+    public void onPlayPauseControlClicked () {
+        // Build play / pause message
+        Message msg = Message.obtain(null, PlaybackService.MSG_PLAY_PAUSE);
+        msg.replyTo = mMessenger;
 
         // Send message
         try {
@@ -180,13 +243,57 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
     /**
      * Handle messages from the PlaybackService
      */
-    private static class IncomingHandler extends Handler {
+    private class IncomingHandler extends Handler {
         @Override
         public void handleMessage (Message msg) {
             switch (msg.what) {
+                case PlaybackService.MSG_NOW_PLAYING:
+                    Song song = msg.getData().getParcelable("Song");
+                    Log.i(TAG, "Now playing song: " + song.getTitle());
+
+                    doUpdatePlayer(song);
+                    break;
+                case PlaybackService.MSG_IS_PAUSED:
+                    Log.i(TAG, "Playback is paused");
+                    doUpdatePlayerButton(true);
                 default:
                     super.handleMessage(msg);
             }
+        }
+    }
+
+    private void doUpdatePlayer (Song song) {
+        FragmentManager fm = getSupportFragmentManager();
+        Fragment fragment = fm.findFragmentById(R.id.music_browser_player_fragment);
+
+        TextView songTitle = (TextView) fragment.getView().findViewById(R.id.player_song_title);
+        songTitle.setText(song.getTitle());
+
+        TextView artist = (TextView) fragment.getView().findViewById(R.id.player_artist);
+        artist.setText(song.getArtist());
+
+        // Show the player if it is currently hidden
+        if (mIsPlayerHidden) {
+            fm.beginTransaction()
+                    .show(fragment)
+                    .commit();
+        }
+
+        // Update the state of the play/pause button
+        doUpdatePlayerButton(false);
+    }
+
+    private void doUpdatePlayerButton (boolean paused) {
+        FragmentManager fm = getSupportFragmentManager();
+        Fragment fragment = fm.findFragmentById(R.id.music_browser_player_fragment);
+
+        ImageButton playPauseButton = (ImageButton) fragment.getView().findViewById(R.id.player_play_pause);
+
+        if (paused) {
+            playPauseButton.setImageResource(android.R.drawable.ic_media_play);
+        }
+        else {
+            playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
         }
     }
 }
