@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -22,12 +23,16 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -63,17 +68,19 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
 
         // Get reference to the drawer layout
         mDrawerLayout = (DrawerLayout) findViewById(R.id.music_browser_drawer_layout);
-        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
-        mDrawerLayout.setScrimColor(0x4C000000);
+        mDrawerLayout.setScrimColor(0x26000000);
 
         // Get reference to the list view (drawer)
         mLeftDrawer = (ListView) findViewById(R.id.music_browser_left_drawer);
 
         // Setup the list for the drawer
-        mLeftDrawer.setAdapter(new ArrayAdapter<String>(this,
-                R.layout.list_item_drawer, R.id.list_drawer_title, getResources().getStringArray(R.array.drawer_menu_items)));
+        ArrayList<DrawerItem> items = new ArrayList<DrawerItem>();
+        items.add(new DrawerItem("Now playing", R.drawable.ic_now_playing));
+        items.add(new DrawerItem("Equalizer", R.drawable.ic_equalizer));
 
-        mLeftDrawer.setOnItemClickListener(new DrawerItemCickListener());
+        mLeftDrawer.setAdapter(new DrawerListAdapter(this, items));
+
+        mLeftDrawer.setOnItemClickListener(new DrawerItemClickListener());
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.music_browser_drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.drawable.ic_drawer, R.string.open_drawer, R.string.close_drawer) {
@@ -167,6 +174,13 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
         super.onPostCreate(savedInstanceState);
 
         mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged (Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -368,7 +382,7 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
         }
     }
 
-    private class DrawerItemCickListener implements ListView.OnItemClickListener {
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick (AdapterView<?> adapterView, View view, int position, long id) {
             switch (position) {
@@ -381,6 +395,57 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
                 default:
                     break;
             }
+        }
+    }
+
+    private class DrawerItem {
+        private String mTitle;
+        private int mIcon;
+
+        public DrawerItem (String title, int icon) {
+            mTitle = title;
+            mIcon = icon;
+        }
+
+        public String getTitle () {
+            return mTitle;
+        }
+
+        public void setTitle (String title) {
+            mTitle = title;
+        }
+
+        public int getIcon () {
+            return mIcon;
+        }
+
+        public void setIcon (int icon) {
+            mIcon = icon;
+        }
+
+    }
+
+    private class DrawerListAdapter extends ArrayAdapter<DrawerItem> {
+
+        public DrawerListAdapter (Context c, ArrayList<DrawerItem> items) {
+            super(c, 0, items);
+        }
+
+        @Override
+        public View getView (int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView = getLayoutInflater().inflate(R.layout.list_item_drawer, null);
+            }
+
+            DrawerItem d = getItem(position);
+
+            ImageView icon = (ImageView) convertView.findViewById(R.id.list_drawer_icon);
+            icon.setImageResource(d.getIcon());
+
+            TextView title = (TextView) convertView.findViewById(R.id.list_drawer_title);
+            title.setText(d.getTitle());
+
+            return convertView;
         }
     }
 }

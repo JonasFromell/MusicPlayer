@@ -5,7 +5,7 @@
         <!-- General -->
         <item name="android:windowBackground">@color/white</item>
         <item name="android:colorBackground">@color/white</item>
-        <item name="android:windowContentOverlay">@drawable/my_title_bar_shadow</item>
+        <item name="android:windowContentOverlay">@drawable/title_bar_shadow</item>
 
         <!-- ListView -->
         <item name="android:listViewStyle">@style/MyListView</item>

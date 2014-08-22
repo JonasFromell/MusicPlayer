@@ -5,10 +5,17 @@
             android:layout_height="wrap_content"
             style="@style/MyListItem">
 
+    <ImageView
+        android:id="@+id/list_drawer_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="8dp"/>
+
     <TextView
           android:id="@+id/list_drawer_title"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
+          android:layout_gravity="center_vertical"
           style="@style/MyTextAppearance.Widget.ListView.ItemView.Title" />
 
 </LinearLayout>
