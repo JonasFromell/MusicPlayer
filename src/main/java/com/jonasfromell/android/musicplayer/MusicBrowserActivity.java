@@ -10,15 +10,25 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.List;
 
 
 public class MusicBrowserActivity extends ActionBarActivity implements SongsFragment.OnContextMenuItemClicked, SongsFragment.OnListItemClicked, PlayerFragment.OnPlayerControlClickedListener {
@@ -26,6 +36,10 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
 
     private ActionBar mActionBar;
     private ViewPager mViewPager;
+
+    private DrawerLayout mDrawerLayout;
+    private ListView mLeftDrawer;
+    private ActionBarDrawerToggle mDrawerToggle;
 
     private Messenger mPlaybackService;
     private boolean mIsBound;
@@ -39,10 +53,45 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
 
         doBindService();
 
+        // TODO: Clean up this mess
         // Get reference to the action bar
         // and set the navigation mode
         mActionBar = getSupportActionBar();
         mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        mActionBar.setDisplayHomeAsUpEnabled(true);
+        mActionBar.setHomeButtonEnabled(true);
+
+        // Get reference to the drawer layout
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.music_browser_drawer_layout);
+        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
+        mDrawerLayout.setScrimColor(0x4C000000);
+
+        // Get reference to the list view (drawer)
+        mLeftDrawer = (ListView) findViewById(R.id.music_browser_left_drawer);
+
+        // Setup the list for the drawer
+        mLeftDrawer.setAdapter(new ArrayAdapter<String>(this,
+                R.layout.list_item_drawer, R.id.list_drawer_title, getResources().getStringArray(R.array.drawer_menu_items)));
+
+        mLeftDrawer.setOnItemClickListener(new DrawerItemCickListener());
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.music_browser_drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.drawable.ic_drawer, R.string.open_drawer, R.string.close_drawer) {
+            @Override
+            public void onDrawerClosed (View drawerView) {
+                super.onDrawerClosed(drawerView);
+
+                mActionBar.setTitle(R.string.activity_music_browser);
+            }
+
+            @Override
+            public void onDrawerOpened (View drawerView) {
+                super.onDrawerOpened(drawerView);
+
+                mActionBar.setTitle(R.string.app_name);
+            }
+        };
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
 
         // Get reference to the view pager
         // and listeners
@@ -111,6 +160,22 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
 
         ActionBar.Tab albumsTab = mActionBar.newTab().setText("Albums").setTabListener(tabListener);
         mActionBar.addTab(albumsTab);
+    }
+
+    @Override
+    protected void onPostCreate (Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected (MenuItem item) {
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -300,6 +365,22 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
         }
         else {
             playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+        }
+    }
+
+    private class DrawerItemCickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick (AdapterView<?> adapterView, View view, int position, long id) {
+            switch (position) {
+                case 0:
+                    Log.i(TAG, "Now playing was clicked");
+                    break;
+                case 1:
+                    Log.i(TAG, "Equalizer was clicked");
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
