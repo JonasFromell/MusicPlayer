@@ -1,11 +1,14 @@
 package com.jonasfromell.android.musicplayer;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
 /**
  * Created by Jonas on 8/20/14.
  */
 public class Queue {
+    private static final String TAG = "Queue";
 
     private ArrayList<Song> mSongs;
 
@@ -38,19 +41,27 @@ public class Queue {
     }
 
     public Song getNext (int curPosition) {
-        if (!(++curPosition > mSongs.size())) {
-            return mSongs.get(++curPosition);
+        int newPosition = ++curPosition;
+
+        if (!(newPosition >= mSongs.size())) {
+            return mSongs.get(newPosition);
         }
 
         return null;
     }
 
     public Song getPrevious (int curPosition) {
-        if (!(--curPosition < 0)) {
-            return mSongs.get(--curPosition);
+        int newPosition = --curPosition;
+
+        if (!(newPosition < 0)) {
+            return mSongs.get(newPosition);
         }
 
         return null;
+    }
+
+    public boolean contains (Song song) {
+        return mSongs.contains(song);
     }
 
     public int indexOf (Song song) {

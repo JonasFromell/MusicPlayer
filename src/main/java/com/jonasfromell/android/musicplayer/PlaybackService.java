@@ -101,12 +101,6 @@ public class PlaybackService extends Service {
 
                         // Play the song
                         play(playSong);
-
-                        // Broadcast to clients
-                        Bundle data = new Bundle();
-                        data.putParcelable("Song", mCurrentSong);
-
-                        sendMessageToClients(MSG_IS_PLAYING, data);
                     }
 
                     break;
@@ -155,6 +149,7 @@ public class PlaybackService extends Service {
 
         // Initialize a new queue
         mQueue = new Queue();
+        mCurrentQueuePosition = -1;
     }
 
     @Override
@@ -223,8 +218,10 @@ public class PlaybackService extends Service {
         // Store the current song
         mCurrentSong = song;
 
-        // Store the current position in the queue
-        mCurrentQueuePosition = mQueue.indexOf(song);
+        // If this song is in the queue, store it's position
+        if (mQueue.contains(song)) {
+            mCurrentQueuePosition = mQueue.indexOf(song);
+        }
 
         // Prepare the media player (the actual starting will take place in the OnPrepared callback)
         mMediaPlayer.prepareAsync();
@@ -322,10 +319,6 @@ public class PlaybackService extends Service {
      * Utils
      */
 
-    /**
-     * Requests audiofocus
-     * @return boolean Result of the AudioFocusRequest
-     */
     private void doStartPlayback () {
         // Make sure we have audio focus
         if (doRequestAudioFocus()) {
@@ -337,6 +330,10 @@ public class PlaybackService extends Service {
         }
     }
 
+    /**
+     * Requests audiofocus
+     * @return boolean Result of the AudioFocusRequest
+     */
     private boolean doRequestAudioFocus () {
         int result = mAudioManager.requestAudioFocus(
                 mAudioFocusChangeListener,
@@ -426,6 +423,12 @@ public class PlaybackService extends Service {
         public void onPrepared (MediaPlayer mediaPlayer) {
             // Update player state
             mIsPaused = false;
+
+            // Broadcast to clients
+            Bundle data = new Bundle();
+            data.putParcelable("Song", mCurrentSong);
+
+            sendMessageToClients(MSG_IS_PLAYING, data);
 
             // Start playback
             doStartPlayback();

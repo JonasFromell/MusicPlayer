@@ -368,7 +368,7 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
         if (mIsPlayerHidden) {
             fm.beginTransaction()
                     .show(fragment)
-                    .commit();
+                    .commitAllowingStateLoss();
         }
 
         // Update the state of the play/pause button
