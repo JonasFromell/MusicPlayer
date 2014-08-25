@@ -57,20 +57,40 @@
         <item name="android:background">@color/white</item>
     </style>
 
+    <!-- Custom List View -->
+    <style name="MyListView" parent="@android:style/Widget.ListView">
+        <item name="android:cacheColorHint">@color/white</item>
+        <item name="android:background">@color/white</item>
+        <item name="android:listSelector">@drawable/list_view</item>
+        <item name="android:divider">@drawable/list_divider</item>
+        <item name="android:dividerHeight">1dp</item>
+    </style>
+
+
     <!-- Custom List Item -->
-    <style name="MyListItem">
+    <style name="MyListView.ListItem" parent="">
         <item name="android:paddingLeft">8dp</item>
         <item name="android:paddingTop">8dp</item>
         <item name="android:paddingRight">8dp</item>
         <item name="android:paddingBottom">8dp</item>
     </style>
 
-    <style name="MyListItem.Title" parent="MyTextAppearance.Widget.ListView.ItemView.Title">
+    <style name="MyListView.ListItem.Title" parent="MyTextAppearance.Widget.ListView.ItemView.Title">
         <item name="android:textColor">@color/primary</item>
     </style>
 
-    <style name="MyListItem.Subtitle"
+    <style name="MyListView.ListItem.Subtitle"
            parent="MyTextAppearance.Widget.ListView.ItemView.Subtitle">
+    </style>
+
+    <!-- Custom Drawer List View -->
+    <style name="MyDrawerListView" parent="MyListView">
+        <item name="android:listSelector">@drawable/drawer_list_view</item>
+    </style>
+
+    <style name="MyDrawerListView.ListItem" parent="MyListView.ListItem">
+        <item name="android:paddingLeft">13dp</item>
+        <item name="android:background">@drawable/drawer_list_view_item</item>
     </style>
 
     <!-- Custom Text Appearance -->

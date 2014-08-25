@@ -29,7 +29,9 @@
         android:id="@+id/music_browser_left_drawer"
         android:layout_width="260dp"
         android:layout_height="match_parent"
-        android:layout_gravity="start">
+        android:layout_gravity="start"
+        android:choiceMode="singleChoice"
+        style="@style/MyDrawerListView">
 
     </ListView>
     

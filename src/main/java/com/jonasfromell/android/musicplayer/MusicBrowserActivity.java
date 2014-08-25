@@ -75,8 +75,8 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
 
         // Setup the list for the drawer
         ArrayList<DrawerItem> items = new ArrayList<DrawerItem>();
-        items.add(new DrawerItem("Now playing", R.drawable.ic_now_playing));
-        items.add(new DrawerItem("Equalizer", R.drawable.ic_equalizer));
+        items.add(new DrawerItem("Browse", R.drawable.ic_browse));
+        items.add(new DrawerItem("Settings", R.drawable.ic_settings));
 
         mLeftDrawer.setAdapter(new DrawerListAdapter(this, items));
 
@@ -174,6 +174,13 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
         super.onPostCreate(savedInstanceState);
 
         mDrawerToggle.syncState();
+    }
+
+    @Override
+    protected void onDestroy () {
+        super.onDestroy();
+
+        doUnbindService();
     }
 
     @Override
@@ -385,6 +392,9 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick (AdapterView<?> adapterView, View view, int position, long id) {
+            // Clear the selection
+            mLeftDrawer.clearChoices();
+
             switch (position) {
                 case 0:
                     Log.i(TAG, "Now playing was clicked");
@@ -395,6 +405,9 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
                 default:
                     break;
             }
+
+            // Select it
+            mLeftDrawer.setItemChecked(position, true);
         }
     }
 

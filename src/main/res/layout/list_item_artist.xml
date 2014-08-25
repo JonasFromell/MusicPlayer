@@ -4,18 +4,18 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              style="@style/MyListItem">
+              style="@style/MyListView.ListItem">
 
     <TextView
         android:id="@+id/artist_name_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/MyListItem.Title"/>
+        style="@style/MyListView.ListItem.Title"/>
 
     <TextView
         android:id="@+id/artist_num_albums_songs"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/MyListItem.Subtitle"/>
+        style="@style/MyListView.ListItem.Subtitle"/>
 
 </LinearLayout>
