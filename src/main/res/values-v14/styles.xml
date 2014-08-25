@@ -18,6 +18,22 @@
         <item name="android:actionBarTabTextStyle">@style/MyActionBar.TabText</item>
     </style>
 
+    <!-- MiniPlayer -->
+    <style name="MyMiniPlayer" parent="">
+        <item name="android:background">@color/primary_transparent</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+    </style>
+
+    <style name="MyMiniPlayer.Title" parent="MyTextAppearance.Widget.ListView.ItemView.Title">
+        <item name="android:textColor">@color/white</item>
+    </style>
+    <style name="MyMiniPlayer.Subtitle" parent="MyTextAppearance.Widget.ListView.ItemView.Subtitle">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
     <!-- Transparent Theme -->
     <style name="AppTheme.Transparent" parent="AppTheme">
         <item name="android:windowIsTranslucent">true</item>
@@ -65,7 +81,6 @@
         <item name="android:divider">@drawable/list_divider</item>
         <item name="android:dividerHeight">1dp</item>
     </style>
-
 
     <!-- Custom List Item -->
     <style name="MyListView.ListItem" parent="">

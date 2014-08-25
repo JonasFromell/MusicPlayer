@@ -20,23 +20,20 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
-public class MusicBrowserActivity extends ActionBarActivity implements SongsFragment.OnContextMenuItemClicked, SongsFragment.OnListItemClicked, PlayerFragment.OnPlayerControlClickedListener {
+public class MusicBrowserActivity extends ActionBarActivity implements SongsFragment.OnContextMenuItemClicked, SongsFragment.OnListItemClicked, MiniPlayerFragment.OnPlayerControlClickedListener {
     private static final String TAG = "MusicBrowserActivity";
 
     private ActionBar mActionBar;
@@ -126,7 +123,7 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
         Fragment fragment = fm.findFragmentById(R.id.music_browser_player_fragment);
 
         if (fragment == null) {
-            fragment = new PlayerFragment();
+            fragment = new MiniPlayerFragment();
 
             fm.beginTransaction()
                     .add(R.id.music_browser_player_fragment, fragment)
@@ -250,7 +247,7 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
     }
 
     /**
-     * PlayerFragment.OnPlayerControlClickedListener
+     * MiniPlayerFragment.OnPlayerControlClickedListener
      */
     @Override
     public void onPlayPauseControlClicked () {
@@ -364,6 +361,9 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
         TextView artist = (TextView) fragment.getView().findViewById(R.id.player_artist);
         artist.setText(song.getArtist());
 
+        ImageView cover = (ImageView) fragment.getView().findViewById(R.id.player_album_cover);
+        cover.setImageBitmap(MusicRetriever.getAlbumCover(getBaseContext(), song.getAlbum()));
+
         // Show the player if it is currently hidden
         if (mIsPlayerHidden) {
             fm.beginTransaction()
@@ -382,10 +382,10 @@ public class MusicBrowserActivity extends ActionBarActivity implements SongsFrag
         ImageButton playPauseButton = (ImageButton) fragment.getView().findViewById(R.id.player_play_pause);
 
         if (paused) {
-            playPauseButton.setImageResource(android.R.drawable.ic_media_play);
+            playPauseButton.setImageResource(R.drawable.ic_mini_play);
         }
         else {
-            playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+            playPauseButton.setImageResource(R.drawable.ic_mini_pause);
         }
     }
 

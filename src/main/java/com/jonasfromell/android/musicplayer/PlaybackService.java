@@ -64,6 +64,8 @@ public class PlaybackService extends Service {
 
     static final int MSG_ADD_TO_QUEUE = 10;
 
+    static final int MSG_REQUEST_SONG = 11;
+
     // This is what we publish to the client
     final Messenger mMessenger = new Messenger(new IncomingHandler());
 
@@ -71,8 +73,6 @@ public class PlaybackService extends Service {
     class IncomingHandler extends Handler {
         @Override
         public void handleMessage (Message msg) {
-            Log.i(TAG, "Recieved message");
-
             switch (msg.what) {
                 // Client registration
                 case MSG_REGISTER_CLIENT:
@@ -83,15 +83,12 @@ public class PlaybackService extends Service {
                     break;
                 // Music control
                 case MSG_PLAY_PAUSE:
-                    Log.i(TAG, "Handling PLAY_PAUSE");
                     toggle();
                     break;
                 case MSG_PLAY_NEXT:
-                    Log.i(TAG, "Handling PLAY_NEXT");
                     next();
                     break;
                 case MSG_PLAY_PREVIOUS:
-                    Log.i(TAG, "Handling PLAY_PREVIOUS");
                     previous();
                     break;
                 case MSG_PLAY:
@@ -104,6 +101,7 @@ public class PlaybackService extends Service {
                     }
 
                     break;
+                // Queue
                 case MSG_ADD_TO_QUEUE:
                     if (msg.getData() != null) {
                         // Get the song out of the message
@@ -114,6 +112,22 @@ public class PlaybackService extends Service {
                     }
 
                     break;
+                // Getters
+                case MSG_REQUEST_SONG:
+                    if (msg.replyTo != null && mCurrentSong != null) {
+                        Bundle data = new Bundle();
+                        data.putParcelable("Song", mCurrentSong);
+
+                        Message songMsg = Message.obtain(null, MSG_IS_PLAYING);
+                        songMsg.setData(data);
+
+                        try {
+                            msg.replyTo.send(songMsg);
+                        }
+                        catch (RemoteException e) {
+                            Log.e(TAG, "Client was offline");
+                        }
+                    }
                 // Default
                 default:
                     super.handleMessage(msg);

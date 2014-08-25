@@ -3,6 +3,8 @@ package com.jonasfromell.android.musicplayer;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -186,6 +188,33 @@ public class MusicRetriever {
         // Return the songs
         return songs;
 
+    }
+
+    public static Bitmap getAlbumCover (Context c, String album) {
+        Bitmap albumCover = null;
+
+        // Store the column indexes
+        String[] cols = new String[] {
+                MediaStore.Audio.Albums.ALBUM_ART
+        };
+
+        // Build the arguments
+        String[] args = new String[] {
+                album
+        };
+
+        ContentResolver resolver = c.getContentResolver();
+        Uri URI = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
+        Cursor cursor = resolver.query(URI, cols, "album=?", args, MediaStore.Audio.Albums.DEFAULT_SORT_ORDER);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            albumCover = BitmapFactory.decodeFile(cursor.getString(0));
+
+            // Close the cursor
+            cursor.close();
+        }
+
+        return albumCover;
     }
 
     // Get all artists
